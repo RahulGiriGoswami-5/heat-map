@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SafePath — Anonymous Community Safety Map</title>
+
+  <!-- Meta tags for SEO -->
+  <meta name="description"
+    content="SafePath is a secure, fully anonymous community safety mapping app. Report unsafe areas and visualize real-time local safety hot spots using heatmaps.">
+  <meta name="keywords" content="safety map, community safety, heatmap, anonymous safety reporting, SafePath">
+  <meta name="author" content="SafePath Team">
+
+  <!-- Premium Typography: Outfit for headers, Inter for copy -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700&display=swap"
+    rel="stylesheet">
+
+  <!-- Leaflet CSS (Load before Leaflet JS) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <div id="app-container">
+    <!-- Fullscreen Map Base -->
+    <div id="map"></div>
+
+    <!-- Floating Top Navigation -->
+    <header class="navbar-floating" id="app-header">
+      <div class="brand" id="brand-logo-trigger">
+        <div class="logo-icon">
+          <!-- Shield Icon SVG -->
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </div>
+        <h1 class="brand-name">SafePath</h1>
+        <span class="brand-tagline">Community Safety Map</span>
+      </div>
+
+      <div class="nav-actions">
+        <!-- Info Modal Trigger -->
+        <button class="btn-icon" id="info-btn" title="About & Safety Tips" aria-label="About & Safety Tips">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" />
+          </svg>
+        </button>
+
+        <!-- Sidebar Recent Activity Toggle -->
+        <button class="btn-icon" id="sidebar-toggle-btn" title="Recent Reports" aria-label="Recent Reports">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <line x1="8" y1="6" x2="21" y2="6" />
+            <line x1="8" y1="12" x2="21" y2="12" />
+            <line x1="8" y1="18" x2="21" y2="18" />
+            <line x1="3" y1="6" x2="3.01" y2="6" />
+            <line x1="3" y1="12" x2="3.01" y2="12" />
+            <line x1="3" y1="18" x2="3.01" y2="18" />
+          </svg>
+          <span class="badge" id="report-count-badge" style="display: none;">0</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Floating Geolocation Center Button -->
+    <button class="btn-icon btn-locate" id="locate-btn" title="Center to My Location"
+      aria-label="Center to My Location">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <circle cx="12" cy="12" r="10" />
+        <circle cx="12" cy="12" r="3" />
+        <line x1="12" y1="1" x2="12" y2="4" />
+        <line x1="12" y1="20" x2="12" y2="23" />
+        <line x1="1" y1="12" x2="4" y2="12" />
+        <line x1="20" y1="12" x2="23" y2="12" />
+      </svg>
+    </button>
+
+    <!-- Sliding Sidebar for Recent Incidents -->
+    <section class="sidebar" id="sidebar" aria-hidden="true">
+      <div class="sidebar-drag-handle" id="sidebar-drag-handle"></div>
+
+      <div class="sidebar-header">
+        <div class="sidebar-title-container">
+          <h2 class="sidebar-title">Recent Activity</h2>
+          <span class="sidebar-count" id="sidebar-report-count">0</span>
+        </div>
+        <button class="sidebar-close" id="sidebar-close-btn" aria-label="Close sidebar">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="sidebar-content">
+        <!-- Populated via Javascript -->
+        <div class="report-list" id="report-list">
+          <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <p>No reports in this area yet.<br>Click on the map to add one.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Info & Safety Tips Modal Overlay -->
+    <div class="modal-overlay" id="info-modal" aria-hidden="true" role="dialog">
+      <div class="modal-card">
+        <header class="modal-header">
+          <h2>SafePath Info & Tips</h2>
+          <button class="sidebar-close" id="modal-close-btn" aria-label="Close modal">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </header>
+
+        <div class="modal-body">
+          <div class="disclaimer-box">
+            <p><strong>Disclaimer:</strong> This map reflects subjective, self-reported experiences submitted
+              anonymously by community members. It is not verified by law enforcement and does not represent official
+              crime statistics.</p>
+          </div>
+
+          <h3>How SafePath Works</h3>
+          <p style="margin-bottom: 12px; font-size: 0.9rem;">
+            SafePath is a fully anonymous tool that empowers community members to document safety concerns in public
+            spaces. No logins, accounts, or IP addresses are saved.
+          </p>
+          <p style="margin-bottom: 16px; font-size: 0.9rem;">
+            To submit, click anywhere on the map, select a category, and optionally add a brief note (max 100
+            characters). For privacy, submissions are automatically randomized by 50–100 meters, so exact coordinates
+            are never stored.
+          </p>
+
+          <h3>Safety Recommendations</h3>
+          <ul class="tips-list">
+            <li>Trust your instincts. If an area feels unsafe, seek a well-populated, well-lit place immediately.</li>
+            <li>When traveling alone, share your real-time path with a trusted contact.</li>
+            <li>Stay alert: limit distractions like wearing headphones or staring at your phone in isolated spaces.</li>
+            <li>Identify "safe havens" like 24-hour convenience stores or public buildings on your route.</li>
+            <li>In case of immediate danger, dial emergency services (e.g. 911) rather than using this application.</li>
+          </ul>
+
+          <!-- Dev / Demo Controls (Visible for debugging/demo) -->
+          <div class="dev-tools-section">
+            <h4 class="dev-tools-title">Developer / Demo Tools</h4>
+            <p style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: 12px;">
+              Use these options to populate the map with sample data or clear the local database state for testing.
+            </p>
+            <div class="dev-actions-grid">
+              <button class="btn-dev btn-dev-secondary" id="dev-load-demo-btn">
+                Load Demo Reports
+              </button>
+              <button class="btn-dev btn-dev-danger" id="dev-reset-btn">
+                Reset Demo Data
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn-close-modal" id="modal-footer-close-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Toast Notifications -->
+    <div id="toast-container"></div>
+  </div>
+
+  <!-- Leaflet Javascript Library -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <!-- Leaflet Heatmap Plugin (loaded after Leaflet JS) -->
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+
+  <!-- Core App Initialization & UI Controllers -->
+  <script type="module" src="app.js"></script>
+</body>
+
+</html>
