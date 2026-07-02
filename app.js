@@ -44,14 +44,14 @@ const devLoadDemoBtn = document.getElementById('dev-load-demo-btn');
 const brandTrigger = document.getElementById('brand-logo-trigger');
 
 // --- Initialization ---
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   initMap();
   setupEventListeners();
-  updateUI();
+  await updateUI();;
 
   // Set up relative time auto-refresher every 60s
-  setInterval(() => {
-    renderSidebarList();
+  setInterval(async () => {
+    await updateUI();
   }, 60000);
 });
 
@@ -214,7 +214,7 @@ function createPopupContent(lat, lng, popupInstance) {
   }
 
   // Handle submit action
-  submitBtn.addEventListener('click', () => {
+  submitBtn.addEventListener('click', async () => {
     // Client-side rate check
     const rateCheck = checkRateLimit();
     if (!rateCheck.allowed) {
@@ -232,11 +232,11 @@ function createPopupContent(lat, lng, popupInstance) {
       note
     };
 
-    const result = addReport(reportData);
+    const result = await addReport(reportData);
     if (result) {
       showToast('Safety concern reported anonymously.', 'success');
       popupInstance.close();
-      updateUI();
+      await updateUI();
     } else {
       showToast('Error storing report. Please try again.', 'error');
     }
@@ -246,13 +246,13 @@ function createPopupContent(lat, lng, popupInstance) {
 }
 
 // --- UI Sync (Heatmap & Sidebar) ---
-function updateUI() {
-  renderHeatmap();
-  renderSidebarList();
+async function updateUI() {
+  await renderHeatmap();
+  await renderSidebarList();
 }
 
-function renderHeatmap() {
-  const reports = getReports();
+async function renderHeatmap() {
+  const reports = await getReports();
 
   // Convert reports into Leaflet.heat points: [lat, lng, weight]
   const heatPoints = reports.map(r => {
@@ -281,8 +281,8 @@ function renderHeatmap() {
   }).addTo(map);
 }
 
-function renderSidebarList() {
-  const reports = getReports();
+async function renderSidebarList() {
+  const reports = await getReports();
   const count = reports.length;
 
   // Sync count indicators
@@ -409,18 +409,18 @@ function setupEventListeners() {
   });
 
   // Developer action buttons
-  devResetBtn.addEventListener('click', () => {
+  devResetBtn.addEventListener('click', async () => {
     if (confirm('Are you sure you want to delete all reports and reset the demo?')) {
-      clearReports();
+      await clearReports();
       resetRateLimits();
-      updateUI();
+      await updateUI();
       closeInfoModal();
       showToast('Demo reports and limits cleared.', 'success');
     }
   });
 
-  devLoadDemoBtn.addEventListener('click', () => {
-    loadMockDemoData();
+  devLoadDemoBtn.addEventListener('click', async () => {
+    await loadMockDemoData();
     closeInfoModal();
     showToast('Loaded 8 localized demo safety reports.', 'success');
   });
@@ -491,7 +491,7 @@ function dismissToast(toastElement) {
 }
 
 // --- Mock Seeding logic for Demo ---
-function loadMockDemoData() {
+async function loadMockDemoData() {
   const center = map.getCenter();
   const now = Date.now();
 
@@ -525,8 +525,8 @@ function loadMockDemoData() {
     };
   });
 
-  importReports(generated);
-  updateUI();
+  await importReports(generated);
+  await updateUI();
 }
 
 // --- Helper Functions ---

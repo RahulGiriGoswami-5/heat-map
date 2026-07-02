@@ -4,6 +4,14 @@
  * Abstracts local storage persistence and handles privacy offsets and rate-limiting.
  * This can be swapped for a real API (like Supabase or custom REST endpoints) later.
  */
+const SUPABASE_URL = "https://nwjqfzgngkvonsbuushn.supabase.co";
+
+const SUPABASE_KEY = "sb_publishable_TwR8gtq647aqeg7M8lIUkQ_YkkOLRkW";
+
+const supabase = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_KEY
+);
 
 const REPORTS_KEY = 'safepath_reports';
 const SUBMISSIONS_KEY = 'safepath_submissions';
@@ -45,20 +53,19 @@ export function applyRandomOffset(lat, lng) {
  * 
  * @returns {Array} Array of report objects
  */
-export function getReports() {
-  try {
-    const rawData = localStorage.getItem(REPORTS_KEY);
-    if (!rawData) return [];
+export async function getReports() {
+  const { data, error } = await supabase
+    .from('reports')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-    const reports = JSON.parse(rawData);
-    // Ensure they are sorted by creation date descending
-    return reports.sort((a, b) => b.created_at - a.created_at);
-  } catch (error) {
-    console.error('Error fetching reports from localStorage:', error);
+  if (error) {
+    console.error("Supabase Error:", error);
     return [];
   }
-}
 
+  return data;
+}
 /**
  * Adds a new report to persistence after applying privacy offsets.
  * Blocks submission if rate limits are exceeded.
@@ -66,7 +73,7 @@ export function getReports() {
  * @param {Object} reportInput - Object containing { lat, lng, category, note }
  * @returns {Object|null} The saved report object, or null if rate limited
  */
-export function addReport(reportInput) {
+export async function addReport(reportInput) {
   // 1. Perform rate limit check
   const rateLimitStatus = checkRateLimit();
   if (!rateLimitStatus.allowed) {
@@ -79,39 +86,48 @@ export function addReport(reportInput) {
 
   // 3. Construct report object
   const report = {
-    id: typeof crypto.randomUUID === 'function' ? crypto.randomUUID() : Math.random().toString(36).substring(2, 9),
     lat: offsetCoords.lat,
     lng: offsetCoords.lng,
     category: reportInput.category,
-    note: reportInput.note ? reportInput.note.substring(0, 100) : null, // Limit note to 100 chars
-    created_at: Date.now()
+    note: reportInput.note ? reportInput.note.substring(0, 100) : null
   };
 
-  // 4. Save to storage
+  // 4. Save to Supabase
   try {
-    const reports = getReports();
-    reports.push(report);
-    localStorage.setItem(REPORTS_KEY, JSON.stringify(reports));
+    const { data, error } = await supabase
+      .from('reports')
+      .insert([report])
+      .select();
 
-    // 5. Record the submission for rate limiting
+    if (error) {
+      console.error(error);
+      return null;
+    }
+
     recordSubmission();
 
-    return report;
+    return data[0];
   } catch (error) {
-    console.error('Error writing report to localStorage:', error);
+    console.error(error);
     return null;
   }
 }
-
 /**
  * Clears all reports from localStorage.
  * Used for reset/debug demo purposes.
  */
-export function clearReports() {
+export async function clearReports() {
   try {
-    localStorage.removeItem(REPORTS_KEY);
+    const { error } = await supabase
+      .from('reports')
+      .delete()
+      .not('id', 'is', null);
+
+    if (error) {
+      console.error('Error clearing reports from Supabase:', error);
+    }
   } catch (error) {
-    console.error('Error clearing reports from localStorage:', error);
+    console.error('Error clearing reports from Supabase:', error);
   }
 }
 
@@ -193,14 +209,21 @@ export function resetRateLimits() {
  * 
  * @param {Array} newReports - List of reports to load
  */
-export function importReports(newReports) {
+export async function importReports(newReports) {
   try {
-    const reports = getReports();
-    // Merge new reports
-    const merged = [...reports, ...newReports];
-    localStorage.setItem(REPORTS_KEY, JSON.stringify(merged));
+    const rows = newReports.map(r => ({
+      lat: r.lat,
+      lng: r.lng,
+      category: r.category,
+      note: r.note || null,
+      created_at: new Date(r.created_at).toISOString()
+    }));
+
+    const { error } = await supabase.from('reports').insert(rows);
+    if (error) {
+      console.error('Error importing reports to Supabase:', error);
+    }
   } catch (error) {
     console.error('Error importing reports:', error);
   }
 }
-
