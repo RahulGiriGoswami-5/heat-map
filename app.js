@@ -119,6 +119,12 @@ function locateUser(isInitialLoad = false) {
 
 // --- Click to Report Workflow ---
 function handleMapClick(e) {
+  // Close any previously open report popup before opening a new one
+  if (activePopup) {
+    map.closePopup(activePopup);
+    activePopup = null;
+  }
+
   const { lat, lng } = e.latlng;
   selectedCategory = ''; // Reset selected category
 
