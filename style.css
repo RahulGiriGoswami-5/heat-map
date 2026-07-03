@@ -929,3 +929,48 @@ textarea {
 .toast-close:hover {
   color: white;
 }
+
+/* --- Compact report popup override --- */
+.report-popup-form {
+  padding: 14px;
+  max-width: 230px;
+}
+
+.report-popup-form h3 {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.report-popup-form .form-desc {
+  font-size: 11px;
+  line-height: 1.4;
+  margin-bottom: 10px;
+}
+
+.report-popup-form .category-buttons {
+  gap: 6px;
+}
+
+.report-popup-form .btn-cat-select {
+  padding: 8px 10px;
+  font-size: 12.5px;
+}
+
+.report-popup-form .emoji-indicator {
+  font-size: 13px;
+}
+
+.report-popup-form .btn-submit {
+  padding: 8px;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+.report-popup-form textarea {
+  font-size: 12px;
+  padding: 6px 8px;
+}
+
+.custom-leaflet-popup .leaflet-popup-content {
+  margin: 0 !important;
+}

@@ -128,7 +128,11 @@ function handleMapClick(e) {
     closeOnClick: false,
     autoClose: false,
     className: 'custom-leaflet-popup',
-    offset: L.point(0, -5)
+    offset: L.point(0, -5),
+    autoPan: true,
+    autoPanPadding: L.point(16, 16),
+    maxWidth: 260,
+    minWidth: 220
   }).setLatLng(e.latlng);
 
   // Generate popup form structure & wire up button triggers
