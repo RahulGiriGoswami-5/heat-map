@@ -974,3 +974,83 @@ textarea {
 .custom-leaflet-popup .leaflet-popup-content {
   margin: 0 !important;
 }
+
+/* --- Filter Panel --- */
+.filter-panel {
+  position: fixed;
+  top: 88px;
+  right: 16px;
+  width: 260px;
+  max-width: calc(100vw - 32px);
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18);
+  z-index: 900;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  transition: opacity 0.18s ease, transform 0.18s ease, visibility 0.18s;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.filter-panel.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.filter-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid #eef0f4;
+}
+
+.filter-panel-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.filter-panel-content {
+  padding: 14px 16px 16px;
+}
+
+.filter-section-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #8b93a1;
+  margin: 12px 0 8px;
+}
+
+.filter-section-label:first-child {
+  margin-top: 0;
+}
+
+.filter-checkbox-group,
+.filter-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.filter-checkbox,
+.filter-radio {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+
+.filter-checkbox input,
+.filter-radio input {
+  width: 16px;
+  height: 16px;
+  accent-color: #6366f1;
+  cursor: pointer;
+}

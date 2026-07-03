@@ -24,6 +24,10 @@ let map = null;
 let heatmapLayer = null;
 let activePopup = null;
 let selectedCategory = '';
+let activeFilters = {
+  categories: new Set(['Poor lighting', 'Harassment', 'Isolated / no people around', 'Unsafe transit stop', 'Other']),
+  timeRange: 'all'
+};
 
 // --- DOM Elements ---
 const infoBtn = document.getElementById('info-btn');
@@ -35,6 +39,14 @@ const reportList = document.getElementById('report-list');
 const sidebarReportCount = document.getElementById('sidebar-report-count');
 const reportCountBadge = document.getElementById('report-count-badge');
 const locateBtn = document.getElementById('locate-btn');
+
+const filterBtn = document.getElementById('filter-btn');
+const filterBadge = document.getElementById('filter-badge');
+const filterPanel = document.getElementById('filter-panel');
+const filterCloseBtn = document.getElementById('filter-close-btn');
+const filterResetBtn = document.getElementById('filter-reset-btn');
+const filterCategoryInputs = document.querySelectorAll('#filter-categories input[type="checkbox"]');
+const filterTimeRangeInputs = document.querySelectorAll('#filter-timerange input[type="radio"]');
 
 const infoModal = document.getElementById('info-modal');
 const modalCloseBtn = document.getElementById('modal-close-btn');
@@ -255,6 +267,35 @@ function createPopupContent(lat, lng, popupInstance) {
   return container;
 }
 
+// --- Filtering ---
+function applyFilters(reports) {
+  const now = Date.now();
+  const rangeMs = {
+    '24h': 24 * 60 * 60 * 1000,
+    '7d': 7 * 24 * 60 * 60 * 1000,
+    '30d': 30 * 24 * 60 * 60 * 1000
+  };
+
+  return reports.filter(r => {
+    if (!activeFilters.categories.has(r.category)) return false;
+
+    if (activeFilters.timeRange !== 'all') {
+      const createdAtMs = typeof r.created_at === 'number'
+        ? r.created_at
+        : new Date(r.created_at).getTime();
+      const windowMs = rangeMs[activeFilters.timeRange];
+      if (now - createdAtMs > windowMs) return false;
+    }
+
+    return true;
+  });
+}
+
+function updateFilterBadge() {
+  const isDefault = activeFilters.categories.size === 5 && activeFilters.timeRange === 'all';
+  filterBadge.style.display = isDefault ? 'none' : 'flex';
+}
+
 // --- UI Sync (Heatmap & Sidebar) ---
 async function updateUI() {
   await renderHeatmap();
@@ -262,7 +303,8 @@ async function updateUI() {
 }
 
 async function renderHeatmap() {
-  const reports = await getReports();
+  const allReports = await getReports();
+  const reports = applyFilters(allReports);
 
   // Remove existing markers layer if it exists
   if (heatmapLayer) {
@@ -291,7 +333,8 @@ async function renderHeatmap() {
 }
 
 async function renderSidebarList() {
-  const reports = await getReports();
+  const allReports = await getReports();
+  const reports = applyFilters(allReports);
   const count = reports.length;
 
   // Sync count indicators
@@ -400,6 +443,49 @@ function setupEventListeners() {
 
   // Locate current position
   locateBtn.addEventListener('click', () => locateUser(false));
+
+  // Filter panel actions
+  filterBtn.addEventListener('click', () => {
+    filterPanel.classList.toggle('open');
+    filterPanel.setAttribute('aria-hidden', filterPanel.classList.contains('open') ? 'false' : 'true');
+  });
+
+  filterCloseBtn.addEventListener('click', () => {
+    filterPanel.classList.remove('open');
+    filterPanel.setAttribute('aria-hidden', 'true');
+  });
+
+  filterCategoryInputs.forEach(input => {
+    input.addEventListener('change', async () => {
+      if (input.checked) {
+        activeFilters.categories.add(input.value);
+      } else {
+        activeFilters.categories.delete(input.value);
+      }
+      updateFilterBadge();
+      await updateUI();
+    });
+  });
+
+  filterTimeRangeInputs.forEach(input => {
+    input.addEventListener('change', async () => {
+      if (input.checked) {
+        activeFilters.timeRange = input.value;
+        updateFilterBadge();
+        await updateUI();
+      }
+    });
+  });
+
+  filterResetBtn.addEventListener('click', async () => {
+    filterCategoryInputs.forEach(input => { input.checked = true; });
+    filterTimeRangeInputs.forEach(input => { input.checked = input.value === 'all'; });
+    activeFilters.categories = new Set(['Poor lighting', 'Harassment', 'Isolated / no people around', 'Unsafe transit stop', 'Other']);
+    activeFilters.timeRange = 'all';
+    updateFilterBadge();
+    await updateUI();
+    showToast('Filters reset.', 'info');
+  });
 
   // Modals actions
   infoBtn.addEventListener('click', openInfoModal);

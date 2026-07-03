@@ -57,6 +57,15 @@
           </svg>
         </button>
 
+        <!-- Filter Toggle -->
+        <button class="btn-icon" id="filter-btn" title="Filter Reports" aria-label="Filter Reports">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+          </svg>
+          <span class="badge" id="filter-badge" style="display: none;">•</span>
+        </button>
+
         <!-- Sidebar Recent Activity Toggle -->
         <button class="btn-icon" id="sidebar-toggle-btn" title="Recent Reports" aria-label="Recent Reports">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -84,6 +93,39 @@
         <line x1="20" y1="12" x2="23" y2="12" />
       </svg>
     </button>
+    <!-- Filter Panel -->
+    <section class="filter-panel" id="filter-panel" aria-hidden="true">
+      <div class="filter-panel-header">
+        <h2 class="filter-panel-title">Filter Reports</h2>
+        <button class="sidebar-close" id="filter-close-btn" aria-label="Close filters">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+      <div class="filter-panel-content">
+        <p class="filter-section-label">Category</p>
+        <div class="filter-checkbox-group" id="filter-categories">
+          <label class="filter-checkbox"><input type="checkbox" value="Poor lighting" checked> Poor Lighting</label>
+          <label class="filter-checkbox"><input type="checkbox" value="Harassment" checked> Harassment</label>
+          <label class="filter-checkbox"><input type="checkbox" value="Isolated / no people around" checked> Isolated /
+            Empty</label>
+          <label class="filter-checkbox"><input type="checkbox" value="Unsafe transit stop" checked> Unsafe Transit
+            Stop</label>
+          <label class="filter-checkbox"><input type="checkbox" value="Other" checked> Other</label>
+        </div>
+        <p class="filter-section-label">Time range</p>
+        <div class="filter-radio-group" id="filter-timerange">
+          <label class="filter-radio"><input type="radio" name="timerange" value="24h"> Last 24 hours</label>
+          <label class="filter-radio"><input type="radio" name="timerange" value="7d"> Last 7 days</label>
+          <label class="filter-radio"><input type="radio" name="timerange" value="30d"> Last 30 days</label>
+          <label class="filter-radio"><input type="radio" name="timerange" value="all" checked> All time</label>
+        </div>
+        <button class="btn-dev btn-dev-secondary" id="filter-reset-btn" style="width:100%; margin-top: 14px;">Reset
+          Filters</button>
+      </div>
+    </section>
 
     <!-- Sliding Sidebar for Recent Incidents -->
     <section class="sidebar" id="sidebar" aria-hidden="true">
