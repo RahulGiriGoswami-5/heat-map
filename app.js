@@ -254,31 +254,30 @@ async function updateUI() {
 async function renderHeatmap() {
   const reports = await getReports();
 
-  // Convert reports into Leaflet.heat points: [lat, lng, weight]
-  const heatPoints = reports.map(r => {
-    // Harassment reports have a higher visual weight
-    const weight = r.category === 'Harassment' ? 1.0 : 0.5;
-    return [r.lat, r.lng, weight];
-  });
-
-  // Remove existing heatmap layer if it exists
+  // Remove existing markers layer if it exists
   if (heatmapLayer) {
     map.removeLayer(heatmapLayer);
   }
 
-  // Create & overlay new heatmap
-  // Options: radius (intensity spread), blur (feathering), maxZoom (caps heat consolidation)
-  heatmapLayer = L.heatLayer(heatPoints, {
-    radius: 25,
-    blur: 18,
-    maxZoom: 16,
-    gradient: {
-      0.4: 'blue',
-      0.6: 'lime',
-      0.8: 'orange',
-      1.0: 'red'
-    }
-  }).addTo(map);
+  // Solid, fixed-size red pins instead of a blurred heat gradient —
+  // these mark the exact reported spot and stay fully visible/opaque
+  // at every zoom level, since their pixel size doesn't scale with zoom.
+  heatmapLayer = L.layerGroup();
+
+  reports.forEach(r => {
+    const marker = L.circleMarker([r.lat, r.lng], {
+      radius: 9,
+      color: '#ffffff',
+      weight: 2,
+      fillColor: '#dc2626',
+      fillOpacity: 1,
+      opacity: 1
+    });
+    marker.bindTooltip(r.category, { direction: 'top', offset: [0, -8] });
+    heatmapLayer.addLayer(marker);
+  });
+
+  heatmapLayer.addTo(map);
 }
 
 async function renderSidebarList() {
