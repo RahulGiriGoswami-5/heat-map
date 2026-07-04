@@ -9,25 +9,25 @@
   --font-title: 'Outfit', var(--font-sans);
 
   /* Colors */
-  --color-primary: #6366f1;
-  /* Premium Violet/Indigo */
-  --color-primary-hover: #4f46e5;
-  --color-primary-light: #e0e7ff;
+  --color-primary: #ec4899;
+  /* Vibrant Pink */
+  --color-primary-hover: #db2777;
+  --color-primary-light: #fce7f3;
 
-  --color-bg-base: #ffffff;
-  --color-bg-surface: rgba(255, 255, 255, 0.85);
-  --color-bg-secondary: #f8fafc;
+  --color-bg-base: #fffafc;
+  --color-bg-surface: rgba(255, 250, 252, 0.85);
+  --color-bg-secondary: #fdf2f8;
 
-  --color-text-main: #0f172a;
-  /* Slate 900 */
-  --color-text-muted: #475569;
-  /* Slate 600 */
-  --color-text-light: #94a3b8;
-  /* Slate 400 */
+  --color-text-main: #3b0a24;
+  /* Deep berry, keeps text readable on pink */
+  --color-text-muted: #831843;
+  /* Rose 900 */
+  --color-text-light: #db7093;
+  /* Muted rose */
 
-  --color-border: rgba(226, 232, 240, 0.8);
-  /* Slate 200 */
-  --color-border-focus: #818cf8;
+  --color-border: rgba(251, 207, 232, 0.8);
+  /* Soft pink border */
+  --color-border-focus: #f472b6;
 
   /* Category Badge Colors */
   --color-cat-lighting-bg: #fef3c7;
