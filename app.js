@@ -237,6 +237,9 @@ function createPopupContent(lat, lng, popupInstance) {
 
   // Handle submit action
   submitBtn.addEventListener('click', async () => {
+    // Prevent double-submission if already in progress
+    if (submitBtn.disabled) return;
+
     // Client-side rate check
     const rateCheck = checkRateLimit();
     if (!rateCheck.allowed) {
@@ -254,6 +257,10 @@ function createPopupContent(lat, lng, popupInstance) {
       note
     };
 
+    const originalLabel = submitBtn.textContent;
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
+
     const result = await addReport(reportData);
     if (result) {
       showToast('Safety concern reported anonymously.', 'success');
@@ -261,6 +268,8 @@ function createPopupContent(lat, lng, popupInstance) {
       await updateUI();
     } else {
       showToast('Error storing report. Please try again.', 'error');
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel;
     }
   });
 
