@@ -455,6 +455,13 @@ function setupEventListeners() {
 
   // Filter panel actions
   filterBtn.addEventListener('click', () => {
+    const isOpening = !filterPanel.classList.contains('open');
+
+    if (isOpening) {
+      // Close the info modal if it's open before opening the filter panel
+      closeInfoModal();
+    }
+
     filterPanel.classList.toggle('open');
     filterPanel.setAttribute('aria-hidden', filterPanel.classList.contains('open') ? 'false' : 'true');
   });
@@ -497,7 +504,12 @@ function setupEventListeners() {
   });
 
   // Modals actions
-  infoBtn.addEventListener('click', openInfoModal);
+  infoBtn.addEventListener('click', () => {
+    // Close the filter panel if it's open before opening the info modal
+    filterPanel.classList.remove('open');
+    filterPanel.setAttribute('aria-hidden', 'true');
+    openInfoModal();
+  });
   modalCloseBtn.addEventListener('click', closeInfoModal);
   modalFooterCloseBtn.addEventListener('click', closeInfoModal);
   infoModal.addEventListener('click', (e) => {
